@@ -1,0 +1,9 @@
+web3
+eth_abi
+cffi
+requests
+fastapi
+uvicorn
+python-jose
+passlib
+python-multipart
