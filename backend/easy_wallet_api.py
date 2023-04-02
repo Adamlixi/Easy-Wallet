@@ -4,6 +4,33 @@ import logging
 from pydantic import BaseModel
 import service
 import error
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import Response
+from starlette.background import BackgroundTask
+import typing
+import json
+
+class JSONResponse(Response):
+    media_type = "application/json"
+
+    def __init__(
+        self,
+        content: typing.Any,
+        status_code: int = 200,
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        media_type: typing.Optional[str] = None,
+        background: typing.Optional[BackgroundTask] = None,
+    ) -> None:
+        super().__init__(content, status_code, headers, media_type, background)
+
+    def render(self, content: typing.Any) -> bytes:
+        return json.dumps(
+            content,
+            ensure_ascii=False,
+            allow_nan=True,
+            indent=None,
+            separators=(",", ":"),
+        ).encode("utf-8")
 
 logger = logging.getLogger()
 
@@ -19,7 +46,10 @@ class GetMappingReq(BaseModel):
 
 @router.post("/getList")
 async def getList():
-    return response_util.success()
+    l = service.getList()
+    ans = service.GetMappingRes(l)
+    js = jsonable_encoder(response_util.result(error.RETCODE.OK,"",ans))
+    return JSONResponse(content=js)
 
 @router.post("/user/login")
 async def loginEmail(item:EmailCheckReq):
@@ -53,4 +83,4 @@ async def getUserList(getMapping: service.GetMappingReq):
     if co == error.RETCODE.OK:
         return response_util.result(code=error.RETCODE.OK, msg="", data=ans)
     else:
-        return response_util.result(code=co, msg=error.err_msg[ans], data=None)
+        return response_util.result(code=co, msg=error.err_msg[co], data=None)

@@ -3,21 +3,28 @@ import entity
 import logging
 import error
 import tool
+import pandas as pd
+import random
 
-ttlDict = tool.TTLDict()
+loginTTLDict = tool.TTLDict()
+registerTTLDict = tool.TTLDict()
 logger = logging.getLogger()
+wordlist = pd.read_excel('./backend/wordlist.xlsx', header=0)
+wordlist = list(wordlist.iloc[:, 1])
 
 def getList():
-    return
+    wl = wordlist.copy()
+    random.shuffle(wl)
+    return wl
 
-TTLTime = 30
+TTLTime = 300
 
 def loginEmail(email:str):
     ans = entity.getUser(email)
     if len(ans) == 0 :
         return error.RETCODE.USERDATANOTEXIST
     ans, randomeCode = tool.sendEmail(email)
-    ttlDict.setex(email, TTLTime, randomeCode)
+    loginTTLDict.setex(email, TTLTime, randomeCode)
     return ans
 
 def registerEmail(email:str):
@@ -25,22 +32,23 @@ def registerEmail(email:str):
     if len(ans) > 0 :
         return error.RETCODE.USERHASREGISTERED
     ans, randomeCode = tool.sendEmail(email)
-    ttlDict.setex(email, TTLTime, randomeCode)
+    registerTTLDict.setex(email, TTLTime, randomeCode)
     return ans
 
 
 class UploadMappingReq(BaseModel):
     email: str
     code: str
-    worldlist: str[65536]
+    wordlist: list
+
 
 def uploadMapping(mapping:UploadMappingReq):
-    code = ttlDict.get(mapping.email)
+    code = registerTTLDict.get(mapping.email)
     if code == None:
         return error.RETCODE.EMAILEXPIRED
     elif code != mapping.code:
         return error.RETCODE.CODEERROR
-    entity.newUser(email=mapping.email, mapping=','.join(mapping.worldlist))        
+    entity.newUser(email=mapping.email, mapping=','.join(str(i) for i in mapping.wordlist))        
     return error.RETCODE.OK
 
 
@@ -48,19 +56,17 @@ class GetMappingReq(BaseModel):
     email: str
     code: str
 
-class GetMappingRes(BaseModel):
-    worldlist: str[65536]
+class GetMappingRes():
+    def __init__(self, wd):
+        self.wordlist = wd     # 列表
 
 def getUserList(getMapping:GetMappingReq):
-    ans = GetMappingRes()
-    code = ttlDict.get(getMapping.email)
+    code = loginTTLDict.get(getMapping.email)
     if code == None:
-        return error.RETCODE.EMAILEXPIRED
+        return None, error.RETCODE.EMAILEXPIRED
     elif code != getMapping.code:
-        return error.RETCODE.CODEERROR
-    mapping, co = entity.fetchMapping(getMapping.email)
-    if co != error.RETCODE.OK:
-        return ans, co
+        return None, error.RETCODE.CODEERROR
+    mapping = entity.fetchMapping(getMapping.email)
     mapp = mapping.split(',')
-    ans.worldlist = mapp
-    return ans, co
+    ans = GetMappingRes(mapp)
+    return ans, error.RETCODE.OK
