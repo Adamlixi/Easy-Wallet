@@ -14,5 +14,6 @@ err_msg = {
     RETCODE.SENDEMAILFAILED     : "Send email failed.",
     RETCODE.EMAILEXPIRED        : "Email code expired.",
     RETCODE.CODEERROR           : "Error.",
-    RETCODE.USERHASREGISTERED   : "User has registered."
+    RETCODE.USERHASREGISTERED   : "User has registered.",
+    RETCODE.ERROR               : "ERROR."
 }
