@@ -9,10 +9,10 @@ class RETCODE():
     USERHASREGISTERED   = "5"   
 
 err_msg = {
-    RETCODE.OK                 : "成功",
-    RETCODE.USERDATANOTEXIST   : "USER NOT EXIST",
-    RETCODE.SENDEMAILFAILED     : "2",
-    RETCODE.EMAILEXPIRED        : "3",
-    RETCODE.CODEERROR           : "4",
-    RETCODE.USERHASREGISTERED   : "5"
+    RETCODE.OK                 : "Succeed.",
+    RETCODE.USERDATANOTEXIST   : "USER NOT EXIST.",
+    RETCODE.SENDEMAILFAILED     : "Send email failed.",
+    RETCODE.EMAILEXPIRED        : "Email code expired.",
+    RETCODE.CODEERROR           : "Error.",
+    RETCODE.USERHASREGISTERED   : "User has registered."
 }
