@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import response_util
 import sys
 import logging
+import easy_wallet_api
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -52,6 +53,7 @@ async def home():
 
 router = APIRouter()
 router.include_router(test_api.router, prefix="/test", tags=["test"])
+router.include_router(easy_wallet_api.router, prefix="/api", tags=["api"])
 
 app.include_router(router)
 
